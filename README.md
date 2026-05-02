@@ -7,7 +7,7 @@
 - **Incident Type:** Suspicious SSH Activity, Process Monitoring & File Integrity Review
 - **Severity:** High
 - **Detection Method:** Linux Log Analysis + Process Inspection + File Integrity Checks
-- **Tools Used:** SSH, auth.log, last, lastb, ps aux, find
+- **Tools Used:** SSH, auth.log, last, ps aux, find
 - **Status:** Investigated (Simulated SOC Environment)
 
 ---
