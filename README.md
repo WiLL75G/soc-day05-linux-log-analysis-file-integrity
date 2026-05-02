@@ -14,9 +14,9 @@
 
 ## Executive Summary
 
-This investigation focuses on identifying unauthorized SSH access attempts, suspicious system activity, and potential persistence behavior on a Linux system.
+> This investigation focuses on identifying unauthorized SSH access attempts, suspicious system activity, and potential persistence behavior on a Linux system.
 
-The analysis includes authentication logs, log history, process monitoring, and file integrity checks to detect possible compromise indicators.
+> The analysis includes authentication logs, log history, process monitoring, and file integrity checks to detect possible compromise indicators.
 
 ---
 
