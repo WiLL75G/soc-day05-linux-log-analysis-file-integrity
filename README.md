@@ -236,7 +236,7 @@ This investigation demonstrates the ability to:
 
 ---
 
-# Linux Security Log Quick Reference
+## Linux Security Log Quick Reference
 
 | Log File | Location | What It Contains | SOC Use |
 |----------|----------|-----------------|---------|
