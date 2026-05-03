@@ -236,6 +236,19 @@ This investigation demonstrates the ability to:
 
 ---
 
+# Linux Security Log Quick Reference
+
+| Log File | Location | What It Contains | SOC Use |
+|----------|----------|-----------------|---------|
+| auth.log | /var/log/auth.log | Login attempts, SSH events | Brute force, unauthorized access |
+| syslog | /var/log/syslog | General system activity | Anomaly detection |
+| kern.log | /var/log/kern.log | Kernel messages | Rootkit indicators |
+| bash_history | ~/.bash_history | User command history | Attacker command trace |
+| wtmp/btmp | /var/log/ | Login success/failure history | Session forensics |
+| cron | /var/log/cron.log | Scheduled job activity | Persistence mechanisms |
+| apache2 | /var/log/apache2/ | Web server requests | Web attack detection |
+
+
 ## Repository Structure
 
 ``` id="finalstructurev2"
