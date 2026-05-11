@@ -269,6 +269,4 @@ This investigation demonstrates the ability to:
 
 ## Conclusion
 
-This investigation demonstrates how Linux systems can be monitored for unauthorized access, malicious process execution, and system tampering. Through structured SOC analysis techniques, early-stage intrusion attempts and persistence behaviors can be effectively detected and mitigated.
-
-```
+This investigation demonstrates how Linux systems can be monitored for unauthorized access, malicious process execution, and system tampering. Through structured SOC analysis techniques, early intrusion attempts and persistence behaviors can be effectively detected and mitigated.
