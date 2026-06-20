@@ -1,4 +1,4 @@
-# Day 05 – SOC Tier 1 Incident Report: Linux Log Analysis & File Integrity Monitoring
+# SOC Tier 1 Incident Report: Linux Log Analysis & File Integrity Monitoring
 
 ---
 
