@@ -1,255 +1,165 @@
-# SOC Tier 1 Incident Report: Linux Log Analysis & File Integrity Monitoring
+# Linux Log Analysis and File Integrity Investigation
 
----
+Working a Linux host from the command line: reading auth.log for brute force, checking what is running, and verifying whether an attacker left anything behind in /etc.
 
-## Incident Summary
+## At a Glance
 
-- **Incident Type:** Suspicious SSH Activity, Process Monitoring & File Integrity Review
-- **Severity:** High
-- **Detection Method:** Linux Log Analysis + Process Inspection + File Integrity Checks
-- **Tools Used:** SSH, auth.log, last, ps aux, find
-- **Status:** Investigated (Simulated SOC Environment)
+| Field | Detail |
+| --- | --- |
+| Alert Type | Suspicious SSH activity and possible persistence |
+| Severity | High |
+| Detection Method | Authentication log analysis, process inspection, file integrity checks |
+| Tools Used | auth.log, last, ps aux, find |
+| Host | Kali Linux, lab victim machine |
+| Outcome | Brute force confirmed in logs, attacker persistence simulated and detected |
 
----
+## What Happened
 
-## Executive Summary
+A Linux host was investigated for unauthorised SSH access and signs that an attacker had established a foothold.
 
-This investigation focuses on identifying unauthorized SSH access attempts, suspicious system activity, and potential persistence behavior on a Linux system. The analysis includes authentication logs, log history, process monitoring, and file integrity checks to detect possible compromise indicators.
+The order matters. Logs tell you someone tried. Processes tell you what is running now. File integrity tells you what they left behind. Checking only the first one answers a third of the question.
 
----
-
-## Affected System
-
-- **Operating System:** Kali Linux (Victim Machine)
-- **Service Under Investigation:** SSH
-- **Log Sources:**
-  - `/var/log/auth.log`
-  - `last`
-  - Process monitoring (`ps aux`)
-  - `/etc` directory integrity checks  
-
----
-
-## Investigation Methodology
-
----
-
-### 1. Log Directory Overview
+## Log Directory Overview
 
 ![Log Directory](./screenshots/log_directory.png)
 
-- Reviewed Linux log storage structure  
-- Identified authentication log locations  
-- Confirmed forensic data sources available  
+The log storage structure was reviewed first to confirm which forensic sources existed on the host before relying on any of them.
 
----
-
-## Authentication Log Analysis
-
----
-
-### 2. Failed & Suspicious Login Attempts
+## Failed Login Attempts
 
 ![Auth Logs](./screenshots/auth_logs.png)
 
-- Inspected `/var/log/auth.log`  
-- Detected multiple failed SSH login attempts  
-- Observed repeated authentication failures from external IP  
+/var/log/auth.log was inspected directly.
 
-### SOC Observations:
+Multiple failed SSH authentication attempts were present, originating from an external IP, cycling through different usernames.
 
-- Repeated login attempts indicate brute-force attack  
-- Multiple username guessing patterns detected  
-- External attacker IP identified  
+Username cycling is the distinction that matters. Repeated failures against one account is someone guessing a password. Failures across many accounts is someone guessing who exists. Both are brute force, but they tell you different things about what the attacker knows.
 
----
-
-### 3. Login History Review
+## Login History Review
 
 ![Login History](./screenshots/login_history.png)
 
-- Reviewed successful login sessions  
-- Checked login timestamps and user activity  
-- Identified suspicious access patterns  
+Successful sessions were reviewed with timestamps and user context.
 
-### SOC Observations:
+Failures alone are only half an investigation. The question that closes it is whether anything succeeded, and from where. Any session from an unrecognised IP or account is treated as suspicious until it is explained.
 
-- Unusual login attempts flagged  
-- Any unknown IP or user is treated as suspicious  
-
----
-
-## Process Monitoring (System Activity)
-
----
-
-### 4. Active Process Analysis
+## Process Inspection
 
 ![Process Monitoring](./screenshots/ps_ax.png)
 
-- Monitored running system processes using `ps aux` / `ps ax`  
-- Identified active processes and execution behavior  
-- Checked for suspicious or unknown processes  
+Running processes were enumerated with ps aux to establish what was actually executing on the host.
 
-### SOC Observations:
+Logs are history. Processes are the present. If an attacker got in and ran something, the log tells you they arrived, but the process list tells you they are still here.
 
-- Look for unusual processes such as:
-  - unknown binaries
-  - suspicious scripts
-  - unexpected background services  
-- Process anomalies may indicate malware execution  
+What earns attention: binaries with no known parent, scripts running outside a package path, background services that nobody scheduled.
 
----
-
-## File Integrity Monitoring
-
----
-
-### 5. /etc Directory Modifications
+## File Integrity, /etc Directory
 
 ![ETC Modified](./screenshots/etc_modified.png)
 
-- Checked recently modified system configuration files  
-- Investigated unauthorized system changes  
+Recently modified configuration files under /etc were checked for unauthorised changes.
 
-### SOC Observations:
+/etc is where a Linux system keeps its rules. An attacker who reaches it is not visiting, they are moving in.
 
-- Any modification in `/etc` is considered high-risk  
-- May indicate system tampering or persistence setup  
-
----
-
-### 6. Critical System Files Check
+## Critical System Files
 
 ![Critical Files](./screenshots/critical_files.png)
 
-- Verified integrity of:
-  - `/etc/passwd`
-  - `/etc/shadow`
+Integrity was verified on the two files that define who can authenticate:
 
-### SOC Observations:
+/etc/passwd, the account list.
 
-- Changes in authentication files indicate compromise risk  
-- Permission or timestamp changes are critical indicators  
+/etc/shadow, the password hashes.
 
----
+A timestamp change on either one is not a maintenance event. It means the account model of the host changed, and someone needs to explain why.
 
-## Attack Simulation Evidence
-
----
-
-### 7. Attacker Creation Activity
+## Persistence Simulation
 
 ![Simulation Changes](./screenshots/simulation_changes.png)
 
-- Created test malicious user account  
-- Simulated attacker persistence behavior  
-- Verified system response to account creation  
+A test account was created on the host to simulate attacker persistence, and the system response was verified.
 
-### SOC Observations:
-
-- New user creation detected in system logs  
-- May indicate attacker attempting persistence  
-- Requires immediate investigation in real environment  
-
----
+The account creation surfaced in the logs. That is the check the whole lab exists to run: not whether an attacker can add a user, but whether the host records it when they do.
 
 ## Log Validation
 
----
-
-### 8. Authentication Log Review (Latest Activity)
-
 ![Auth Log Tail](./screenshots/auth_log_tail.png)
 
-- Reviewed latest authentication events  
-- Traced recent login and system activity  
-- Validated brute-force and login behavior  
+The tail of auth.log was reviewed to trace the most recent authentication and system activity, confirming the brute force and the account creation both landed in the log where they should.
 
----
+## Indicators Observed
 
-## Indicators of Compromise (IOCs)
+Multiple failed SSH authentication attempts from an external IP.
 
-- Multiple failed SSH login attempts  
-- External IP brute-force activity  
-- Successful login anomalies  
-- Suspicious system process execution  
-- Unauthorized user creation (attacker account)  
-- File modifications in `/etc`  
-- Authentication log anomalies  
+Username cycling consistent with automated guessing.
 
----
+Unauthorised user account creation.
+
+Modification activity under /etc.
+
+Process activity requiring validation against known good baseline.
 
 ## MITRE ATT&CK Mapping
 
-| Behavior              | Technique ID | Description              |
-|----------------------|--------------|--------------------------|
-| Brute Force Attack   | T1110        | Credential Access        |
-| Valid Accounts       | T1078        | Account Access Abuse     |
-| Account Creation     | T1136        | Persistence              |
-| Process Execution    | T1059        | System Execution         |
-| File Modification    | T1112        | System Tampering         |
+| Behaviour | Technique ID | Description |
+| --- | --- | --- |
+| Repeated SSH authentication failures | T1110 | Brute force |
+| Session from unrecognised source | T1078 | Valid accounts |
+| Unauthorised account creation | T1136 | Create account, persistence |
+| Execution on host | T1059 | Command and scripting interpreter |
+| Configuration file modification | T1112 | Modify system settings |
 
----
+## Analyst Conclusion
 
-## SOC Analyst Findings
+SSH brute force confirmed in auth.log from an external source IP.
 
-- SSH brute-force attempts confirmed in logs  
-- Unauthorized login attempts detected  
-- Suspicious process activity observed  
-- Attacker account creation simulated successfully  
-- File integrity checks show potential system modification  
+Attacker persistence via account creation simulated and successfully detected in the logs.
 
----
+File integrity checks on /etc and the authentication files completed, giving a documented baseline to compare against.
 
-## SOC Analyst Response
+Activity was lab controlled. No real compromise occurred.
 
-- Enforce SSH key authentication  
-- Disable root login via SSH  
-- Monitor authentication logs continuously  
-- Investigate unknown processes immediately  
-- Alert on new user creation events  
-- Implement file integrity monitoring tools (AIDE / Tripwire)  
+## Recommended Response
 
----
+Enforce SSH key authentication and disable password login.
 
-## Analyst Insight
+Disable direct root login over SSH.
 
-Linux systems provide strong forensic visibility through logs and process inspection. SOC analysts must correlate authentication activity, process behavior, and file integrity changes to detect compromise attempts effectively.
+Alert on new user account creation rather than discovering it during a manual check.
 
----
+Deploy file integrity monitoring, AIDE or Tripwire, so /etc changes fire an alert instead of waiting for an analyst to run find.
 
-## Learning Outcome
-
-This investigation demonstrates the ability to:
-
-- Analyze Linux authentication logs  
-- Detect brute-force SSH attacks  
-- Investigate login history  
-- Monitor system processes (`ps aux`)  
-- Detect unauthorized user creation  
-- Identify file integrity violations  
-- Simulate attacker behavior in a controlled lab  
-- Apply SOC Tier 1 investigation methodology  
-
----
+Investigate any unrecognised process against a known good baseline.
 
 ## Linux Security Log Quick Reference
 
-| Log File | Location | What It Contains | SOC Use |
-|----------|----------|-----------------|---------|
-| auth.log | /var/log/auth.log | Login attempts, SSH events | Brute force, unauthorized access |
+| Log File | Location | What It Contains | Why It Matters |
+| --- | --- | --- | --- |
+| auth.log | /var/log/auth.log | Login attempts, SSH events | Brute force, unauthorised access |
 | syslog | /var/log/syslog | General system activity | Anomaly detection |
 | kern.log | /var/log/kern.log | Kernel messages | Rootkit indicators |
 | bash_history | ~/.bash_history | User command history | Attacker command trace |
-| wtmp/btmp | /var/log/ | Login success/failure history | Session forensics |
+| wtmp and btmp | /var/log/ | Login success and failure history | Session forensics |
 | cron | /var/log/cron.log | Scheduled job activity | Persistence mechanisms |
 | apache2 | /var/log/apache2/ | Web server requests | Web attack detection |
 
+## What This Lab Demonstrates
+
+Reading Linux authentication logs from the command line, not from a dashboard.
+
+Distinguishing password guessing from account enumeration in the same log.
+
+Correlating authentication evidence with live process state.
+
+Checking file integrity on the files that decide who can log in.
+
+Simulating persistence and verifying the host actually records it.
+
+Mapping the full chain to MITRE ATT&CK.
 
 ## Repository Structure
 
-``` id="finalstructurev2"
+```
 .
 ├── README.md
 ├── screenshots/
@@ -261,10 +171,9 @@ This investigation demonstrates the ability to:
 │   ├── critical_files.png
 │   ├── simulation_changes.png
 │   └── auth_log_tail.png
-````
+```
 
 ---
 
-## Conclusion
-
-This investigation demonstrates how Linux systems can be monitored for unauthorized access, malicious process execution, and system tampering. Through structured SOC analysis techniques, early intrusion attempts and persistence behaviors can be effectively detected and mitigated.
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-WilliamInCyber-blue?style=flat&logo=linkedin)](https://linkedin.com/in/WilliamInCyber)
+[![X](https://img.shields.io/badge/X-WilliamInCyber-black?style=flat&logo=x)](https://x.com/WilliamInCyber)
